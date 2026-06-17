@@ -32,11 +32,15 @@ data_dir = module_dir / '_sounddevice_data' / 'portaudio-binaries'
 if is_darwin:
     # for Macos Big Sur, the stable portaudio (19.6.0) makes Friture freeze on startup
     # so we build our own and bundle it manually here
-    path = "/usr/local/lib/libportaudio.dylib"
+    # /opt/homebrew is the Apple Silicon path; /usr/local is the Intel path
+    for candidate in ["/opt/homebrew/lib/libportaudio.dylib", "/usr/local/lib/libportaudio.dylib"]:
+        if os.path.isfile(candidate):
+            path = candidate
+            break
+    else:
+        raise ValueError('libportaudio could not be found')
     destdir = str(data_dir.relative_to(module_dir))
     binaries += [(path, destdir)]
-    if not os.path.isfile(path):
-        raise ValueError('libportaudio could not be found')
 elif data_dir.is_dir():
     destdir = str(data_dir.relative_to(module_dir))
 
